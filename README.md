@@ -1,4 +1,4 @@
-<h1 align="center">Apple ID 一键解锁工具</h1>
+<h1 align="center">Apple ID -Công cụ mở khóa một phím</h1>
 <p align="center">
     <a href="https://github.com/pplulee/appleid_auto/issues" style="text-decoration:none">
         <img src="https://img.shields.io/github/issues/pplulee/appleid_auto.svg" alt="GitHub issues"/>
