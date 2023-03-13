@@ -150,7 +150,7 @@ if (isset($_GET['action'])) {
                             </div>
                             <div class='input-group mb-3'>
                                 <span class='input-group-text' id='dob'>Ngày sinh</span>
-                                <input type='text' class='form-control' name='dob' placeholder='Ngày sinh：ddmmyyyy' required autocomplete='off' maxlength='8' minlength='8'>
+                                <input type='text' class='form-control' name='dob' placeholder='Ngày sinh：mmddyyyy' required autocomplete='off' maxlength='8' minlength='8'>
                             </div>
                             <div class='input-group mb-3'>
                                 <span class='input-group-text' id='question1'>Câu hỏi 1</span>
@@ -251,7 +251,7 @@ if (isset($_GET['action'])) {
                             </div>
                             <div class='input-group mb-3'>
                                 <span class='input-group-text' id='dob'>Ngày Sinh</span>
-                                <input type='text' class='form-control' name='dob' placeholder='Ngày sinh：ddmmyyyy' required autocomplete='off' value='$account->dob' maxlength='8' minlength='8'>
+                                <input type='text' class='form-control' name='dob' placeholder='Ngày sinh：mmddyyyy' required autocomplete='off' value='$account->dob' maxlength='8' minlength='8'>
                             </div>
                             <div class='input-group mb-3'>
                                 <span class='input-group-text' id='question1'>Câu hỏi 1</span>

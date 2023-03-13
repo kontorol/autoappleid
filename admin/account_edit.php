@@ -97,7 +97,7 @@ if (isset($_GET['action'])) {
                             </div>
                             <div class='input-group mb-3'>
                                 <span class='input-group-text' id='dob'>Ngày sinh</span>
-                                <input type='text' class='form-control' name='dob' placeholder='ddmmyyyy' required autocomplete='off' value='$account->dob'>
+                                <input type='text' class='form-control' name='dob' placeholder='mmddyyyy' required autocomplete='off' value='$account->dob'>
                             </div>
                             <div class='input-group mb-3'>
                                 <span class='input-group-text' id='question1'>Câu hỏi 1</span>
