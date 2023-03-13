@@ -42,7 +42,7 @@ if ($account->id == -1) {
             ?>
             <p class="card-subtitle mb-2 text-muted">Thời gian kiểm tra lần cuối: <?php echo $account->last_check ?></p>
             <p class="card-subtitle mb-2 text-muted">
-                Trạng thái: <?php echo ($account->message == "Đang hoạt động" && ((time() - strtotime($account->last_check)) < (($account->check_interval + 2) * 60))) ? "<img src='resources/img/icons8-checkmark.svg' width='30' height='30'><span style='color: #549A31'>Đang hoạt động</span>" : "<img src='resources/img/icons8-cancel.svg' width='30' height='30'><span style='color: #B40404'>Không hoạt động</span>" ?></p>
+                Trạng Thái：<?php echo ($account->message == "Bình thường" && ((time() - strtotime($account->last_check)) < (($account->check_interval + 2) * 60))) ? "<img src='resources/img/icons8-checkmark.svg' width='30' height='30'><span style='color: #549A31'>Bình thường</span>" : "<img src='resources/img/icons8-cancel.svg' width='30' height='30'><span style='color: #B40404'>Không hoạt Động</span>" ?></p>
             <button id="username" class="btn btn-primary" data-clipboard-text="<?php echo $account->username ?>"
                     onclick='alert_success()'>Sao chép tên đăng nhập
             </button>
