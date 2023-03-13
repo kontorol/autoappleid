@@ -92,7 +92,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/Github-Aiko/autoappleid/main/b
   Tham số khởi động: `-api_url <Địa chỉ API> -api_key <API key> -taskid <ID nhiệm vụ>`
 
 Chỉ cần triển khai **chương trình quản lý Backend** và nó sẽ tự động lấy danh sách nhiệm vụ từ trang web API và triển khai các container Docker tương ứng với các nhiệm vụ. Thời gian đồng bộ mặc định là 10 phút (đồng bộ thủ công có thể khởi động lại dịch vụ) \
-Nếu không muốn sử dụng đồng bộ tự động, bạn có thể triển khai **chương trình mở khóa Backend** trực tiếp, phiên bản Docker [sahuidhsu/autoappleid](https://hub.docker.com/r/sahuidhsu/autoappleid)
+Nếu không muốn sử dụng đồng bộ tự động, bạn có thể triển khai **chương trình mở khóa Backend** trực tiếp, phiên bản Docker [sahuidhsu/appleid_auto](https://hub.docker.com/r/sahuidhsu/appleid_auto)
 
 ---
 # Tài trợ cho nhà phát triển
