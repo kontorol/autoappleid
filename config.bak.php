@@ -4,7 +4,7 @@ $Sys_config["enable_register"] = true;
 $Sys_config["db_host"] = "localhost";
 $Sys_config["db_user"] = "root";
 $Sys_config["db_password"] = "123456";
-$Sys_config["db_database"] = "appleid_auto";
+$Sys_config["db_database"] = "autoappleid";
 
 $Sys_config["apiurl"] = "http://xxx.xxx"; // Địa chỉ website, không kết thúc bằng dấu /
 $Sys_config["apikey"] = "114514"; // Khóa API

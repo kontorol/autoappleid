@@ -1,16 +1,16 @@
 <h1 align="center">Apple ID -Công cụ mở khóa một phím</h1>
 <p align="center">
-    <a href="https://github.com/pplulee/appleid_auto/issues" style="text-decoration:none">
-        <img src="https://img.shields.io/github/issues/pplulee/appleid_auto.svg" alt="GitHub issues"/>
+    <a href="https://github.com/Github-Aiko/autoappleid/issues" style="text-decoration:none">
+        <img src="https://img.shields.io/github/issues/Github-Aiko/autoappleid.svg" alt="GitHub issues"/>
     </a>
-    <a href="https://github.com/pplulee/appleid_auto/stargazers" style="text-decoration:none" >
-        <img src="https://img.shields.io/github/stars/pplulee/appleid_auto.svg" alt="GitHub stars"/>
+    <a href="https://github.com/Github-Aiko/autoappleid/stargazers" style="text-decoration:none" >
+        <img src="https://img.shields.io/github/stars/Github-Aiko/autoappleid.svg" alt="GitHub stars"/>
     </a>
-    <a href="https://github.com/pplulee/appleid_auto/network" style="text-decoration:none" >
-        <img src="https://img.shields.io/github/forks/pplulee/appleid_auto.svg" alt="GitHub forks"/>
+    <a href="https://github.com/Github-Aiko/autoappleid/network" style="text-decoration:none" >
+        <img src="https://img.shields.io/github/forks/Github-Aiko/autoappleid.svg" alt="GitHub forks"/>
     </a>
-    <a href="https://github.com/pplulee/apple_auto/blob/main/LICENSE" style="text-decoration:none" >
-        <img src="https://img.shields.io/github/license/pplulee/appleid_auto" alt="GitHub license"/>
+    <a href="https://github.com/Github-Aiko/apple_auto/blob/main/LICENSE" style="text-decoration:none" >
+        <img src="https://img.shields.io/github/license/Github-Aiko/autoappleid" alt="GitHub license"/>
     </a>
 </p>
 <h3 align="center">Vui lòng đọc kỹ tài liệu này cùng với tài liệu Wiki mà chúng tôi sẽ phát hành trong tương lai trước khi sử dụng.</h3>
@@ -69,7 +69,7 @@ Nếu đó là phiên bản mới nhất của tập lệnh quản lý Backend, 
 # Phản hồi về vấn đề và giao tiếp
 
 Khả năng và trình độ phát triển của nhà phát triển có giới hạn, chương trình có thể tồn tại nhiều lỗi, chúng tôi hoan nghênh việc đưa ra ý kiến hoặc yêu cầu Pull Request, chúng tôi cũng hoan nghênh sự tham gia của các chuyên gia trong dự án! \
-Nhóm Telegram: [@appleunblocker](https://t.me/appleunblocker)
+Nhóm Telegram: [@AikoCute](https://t.me/AikoCute)
 
 
 ### Triển khai unblocker_manager (Backend + Webdriver) trong một lần nhấn:
@@ -78,7 +78,7 @@ Nhóm Telegram: [@appleunblocker](https://t.me/appleunblocker)
 ### Triển khai unblocker_manager (Backend + Webdriver) trong một lần nhấn:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/pplulee/appleid_auto/main/backend/install_unblocker.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/Github-Aiko/autoappleid/main/backend/install_unblocker.sh)
 ```
 
 # Giải thích về các tệp
@@ -92,7 +92,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/pplulee/appleid_auto/main/back
   Tham số khởi động: `-api_url <Địa chỉ API> -api_key <API key> -taskid <ID nhiệm vụ>`
 
 Chỉ cần triển khai **chương trình quản lý Backend** và nó sẽ tự động lấy danh sách nhiệm vụ từ trang web API và triển khai các container Docker tương ứng với các nhiệm vụ. Thời gian đồng bộ mặc định là 10 phút (đồng bộ thủ công có thể khởi động lại dịch vụ) \
-Nếu không muốn sử dụng đồng bộ tự động, bạn có thể triển khai **chương trình mở khóa Backend** trực tiếp, phiên bản Docker [sahuidhsu/appleid_auto](https://hub.docker.com/r/sahuidhsu/appleid_auto)
+Nếu không muốn sử dụng đồng bộ tự động, bạn có thể triển khai **chương trình mở khóa Backend** trực tiếp, phiên bản Docker [sahuidhsu/autoappleid](https://hub.docker.com/r/sahuidhsu/autoappleid)
 
 ---
 # Tài trợ cho nhà phát triển

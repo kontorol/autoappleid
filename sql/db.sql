@@ -1,6 +1,6 @@
 /*
 SQLyog Community v13.1.9 (64 bit)
-MySQL - 8.0.12 : Database - appleid_auto
+MySQL - 8.0.12 : Database - autoappleid
 *********************************************************************
 */
 

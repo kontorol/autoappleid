@@ -74,7 +74,7 @@ class KnowledgeController extends Controller
     private function apple(&$body)
     {
 		try{
-            // Phối hợp với https://github.com/pplulee/appleid_auto sử dụng
+            // Phối hợp với https://github.com/Github-Aiko/autoappleid sử dụng
             // Nếu không có mật khẩu trang chia sẻ, xin hãy để trống
             // Các biến front-end {{apple_idX}} {{apple_pwX}} {{apple_statusX}} {{apple_timeX}} X là số thứ tự bắt đầu từ 0
             $req = json_decode($this->api_request_curl("https://xxx.xxx/api/share.php?share_link=xxxx&password=xxxx"), true);

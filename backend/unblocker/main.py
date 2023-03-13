@@ -729,7 +729,7 @@ def job():
 
 
 logger.info(f"{'=' * 80}\n"
-            f"Khởi động AppleID_Auto\n"
+            f"Khởi động autoappleid\n"
             f"Chủ Dự dán : https://t.me/AikoCute\n"
             f"Nhóm Telegram để trao đổi @AikoCute")
 logger.info("Phiên bản hiện tại: v1.44-20230309")

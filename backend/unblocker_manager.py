@@ -65,7 +65,7 @@ class local_docker:
         -e taskid={id} \
         --restart=on-failure \
         --log-opt max-size=1m --log-opt max-file=2 \
-        sahuidhsu/appleid_auto")
+        sahuidhsu/autoappleid")
 
     def remove_docker(self, id):
         logger.info(f"Xóa vùng chứa{id}")
@@ -143,7 +143,7 @@ logger.info("Dịch vụ quản lý phụ trợ AppleAuto bắt đầu")
 api = API()
 Local = local_docker(api)
 logger.info("Kéo gương mới nhất")
-os.system(f"docker pull sahuidhsu/appleid_auto")
+os.system(f"docker pull sahuidhsu/autoappleid")
 logger.info("Xóa tất cả các vùng chứa cục bộ")
 Local.clean_local_docker()
 job()
