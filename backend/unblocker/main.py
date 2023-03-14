@@ -702,7 +702,7 @@ def job():
                     if reset_pw_result:
                         need_login = True
                         update_account(id.username, id.password)
-                        notification(f"Apple ID密码修改成功\n新密码：{id.password}")
+                        notification(f"Đã thay đổi mật khẩu Apple ID thành công\nMật khẩu mới：{id.password}")
                     else:
                         logger.error("Không đổi được mật khẩu")
                         notification("Không đổi được mật khẩu")
