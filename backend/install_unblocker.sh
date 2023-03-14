@@ -6,6 +6,16 @@ echo "Địa chỉ dự án：github.com/Github-Aiko/autoappleid"
 echo "Dự án trao đổi nhóm TG: @AikoCute"
 echo "Hãy chắc chắn rằng máy đã được cài đặt khi sử dụng Python3.6+ pip3 Docker"
 echo "==============================================================="
+echo "Vui lòng chọn ngôn ngữ| Please select language"
+echo "1. Tiếng việt | Vietnamese"
+echo "2. English"
+echo "3. Chinese"
+read -e language
+if [ $language != "1" ] && [ $language != "2" ] && [ $language != "3" ]; then
+    echo "Nhập lỗi, Exit | Input error, exit"
+    exit;
+fi
+
 if python3 -V >/dev/null 2>&1; then
     echo "Python3 đã được cài đặt"
     python_path=$(which python3)
@@ -79,7 +89,7 @@ Description=appleauto
 Wants=network.target
 [Service]
 WorkingDirectory=$install_path
-ExecStart=$python_path $install_path/unblocker_manager.py -api_url $api_url -api_key $api_key
+ExecStart=$python_path $install_path/unblocker_manager.py -api_url $api_url -api_key $api_key -lang $language
 Restart=on-abnormal
 RestartSec=5s
 KillMode=mixed

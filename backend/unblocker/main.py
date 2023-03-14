@@ -22,6 +22,7 @@ parser = argparse.ArgumentParser(description="")
 parser.add_argument("-api_url", help="API URL")
 parser.add_argument("-api_key", help="API key")
 parser.add_argument("-taskid", help="Task ID")
+parser.add_argument("-lang", help="Output language", default="zh_cn")
 args = parser.parse_args()
 
 logger = logging.getLogger()
@@ -32,6 +33,23 @@ formatter = logging.Formatter(BASIC_FORMAT, DATE_FORMAT)
 chlr = logging.StreamHandler()
 chlr.setFormatter(formatter)
 logger.addHandler(chlr)
+
+if args.lang == "zh_cn" or args.lang == "":
+    from lang import zh_cn as lang
+
+    lang_text = lang()
+elif args.lang == "en_us":
+    from lang import en_us as lang
+
+    lang_text = lang()
+    
+elif args.lang == "vi_vn":
+    from lang import vi_vn as lang
+    
+    lang_text = lang()
+else:
+    logger.error("未知语言 | Language not supported")
+    exit(1)
 
 
 class API:
@@ -49,7 +67,7 @@ class API:
                                    "id": id
                                }).text)
         except BaseException as e:
-            logger.error("Không lấy được cấu hình")
+            logger.error(lang_text.ErrorRetrievingConfig)
             logger.error(e)
             return {"status": "fail"}
         else:
@@ -70,7 +88,7 @@ class API:
                         "action": "update_password"
                     }).text)
         except BaseException as e:
-            logger.error("Không thể cập nhật mật khẩu")
+            logger.error(lang_text.failOnPasswordUpdate)
             logger.error(e)
             return {"status": "fail"}
         else:
@@ -90,7 +108,7 @@ class API:
                         "action": "get_password"
                     }).text)
         except BaseException as e:
-            logger.error("Không lấy được mật khẩu")
+            logger.error(lang_text.failOnRetrievingPassword)
             logger.error(e)
             return ""
         else:
@@ -109,7 +127,7 @@ class API:
                             "message": message,
                             "action": "update_message"}).text)
         except BaseException as e:
-            logger.error("Thông báo cập nhật không thành công")
+            logger.error(lang_text.failOnMessageUpdate)
             logger.error(e)
             return False
         else:
@@ -127,7 +145,7 @@ class API:
                             "id": proxy_id,
                             "action": "report_proxy_error"}).text)
         except BaseException as e:
-            logger.error("Không thể báo cáo lỗi đại lý")
+            logger.error(lang_text.failOnReportingProxyError)
             logger.error(e)
             return False
         else:
@@ -159,29 +177,32 @@ class Config:
         self.enable_delete_devices = "delete_devices" in config_result.keys()
         self.enable_auto_update_password = "auto_update_password" in config_result.keys()
         self.headless = "headless" in config_result.keys()
-        if self.proxy_content!="" and self.proxy_type!="":
+        if self.proxy_content != "" and self.proxy_type != "":
             # 新版本代理
-            if self.proxy_type=="url":
+            if "url" in self.proxy_type:
                 try:
-                    self.proxy = get(self.proxy_content).text
+                    self.proxy = self.proxy_type+"://"+get(self.proxy_content).text
                 except BaseException as e:
-                    logger.error("Không thể lấy proxy từ API")
+                    logger.error(lang_text.failOnRetrievingProxyFromAPI)
                     logger.error(e)
                     self.proxy = ""
                 else:
-                    logger.info(f"Nhận proxy từ API:{self.proxy}")
-            elif self.proxy_type=="socks5" or self.proxy_type=="http":
-                self.proxy = self.proxy_type+"://"+self.proxy_content
+                    logger.info(f"{lang_text.retrievedProxyFromAPI}: {self.proxy}")
+            elif self.proxy_type == "socks5" or self.proxy_type == "http":
+                self.proxy = self.proxy_type + "://" + self.proxy_content
+            else:
+                logger.error(lang_text.invalidProxyType)
+                self.proxy = ""
         if self.headless:
-            logger.info("Kích hoạt để chạy trong nền")
+            logger.info(lang_text.backgroundRunning)
         if self.enable_delete_devices:
-            logger.info("Đã bật Xóa thiết bị")
+            logger.info(lang_text.removeDevice)
         if self.enable_check_password_correct:
-            logger.info("Kích hoạt Kiểm tra mật khẩu là chính xác")
+            logger.info(lang_text.checkPassword)
         if self.enable_auto_update_password:
-            logger.info("Đã bật Cập nhật mật khẩu thường xuyên")
+            logger.info(lang_text.autoUpdatePassword)
         if self.proxy_id != -1:
-            logger.info(f"Sử dụng ID proxy: {self.proxy_id}")
+            logger.info(f"{lang_text.usingProxyID}: {self.proxy_id}")
 
 
 class ID:
@@ -214,15 +235,15 @@ class ID:
             WebDriverWait(driver, 30 if config.proxy != "" else 10).until(
                 EC.presence_of_element_located((By.CLASS_NAME, "iforgot-apple-id")))
         except BaseException:
-            logger.error("Không thể làm mới trang")
+            logger.error(lang_text.failOnRefreshingPage)
             if config.proxy != "":
-                logger.error("Đã bật proxy, vui lòng kiểm tra xem có proxy không")
-                api.update_message(self.username, "Trang không tải được, có thể do proxy không khả dụng")
+                logger.error(lang_text.proxyEnabledRefreshing)
+                api.update_message(self.username, lang_text.proxyEnabledRefreshingAPI)
                 api.report_proxy_error(config.proxy_id)
-                notification("Trang không tải được, có thể do proxy không khả dụng")
+                notification(lang_text.proxyEnabledRefreshingAPI)
             else:
-                api.update_message(self.username, "Tải trang không thành công")
-                notification("Tải trang không thành công")
+                api.update_message(self.username, lang_text.failOnLoadingPage)
+                notification(lang_text.failOnLoadingPage)
             get_ip()
             return False
         try:
@@ -230,24 +251,23 @@ class ID:
         except BaseException:
             return True
         else:
-            logger.error("Trang không tải được và IP máy chủ đáng ngờ đã bị từ chối truy cập")
+            logger.error(lang_text.IPBlocked)
             logger.error(text)
-            api.update_message(self.username, "Trang không tải được, vui lòng kiểm tra nhật ký để biết lý do cụ thể")
+            api.update_message(self.username, lang_text.seeLog)
             if config.proxy != "":
                 api.report_proxy_error(config.proxy_id)
-            notification("Trang không tải được, vui lòng kiểm tra nhật ký để biết lý do cụ thể")
+            notification(lang_text.seeLog)
             get_ip()
             return False
 
     def process_verify(self):
-        # Cần phải gọi hàm login trước để đến được trang web cần xử lý
         try:
             img = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "img"))).get_attribute(
                 "src").replace('data:image/jpeg;base64, ', '')
             code = ocr.classification(img)
             driver.find_element(By.CLASS_NAME, "captcha-input").send_keys(code)
         except BaseException:
-            logger.error("Không thể lấy được mã xác nhận")
+            logger.error(lang_text.failOnGettingCaptcha)
             return False
         else:
             return True
@@ -259,15 +279,15 @@ class ID:
             WebDriverWait(driver, 7).until(
                 EC.presence_of_element_located((By.CLASS_NAME, "iforgot-apple-id"))).send_keys(self.username)
         except BaseException:
-            logger.error("Không thể lấy nội dung trang web, sẽ sớm thoát khỏi chương trình")
+            logger.error(lang_text.failOnRetrievingPage)
             if config.proxy != "":
-                logger.error("Đã kích hoạt proxy, vui lòng kiểm tra xem proxy có thể sử dụng được không")
-                api.update_message(self.username, "Không thể lấy nội dung trang web, có thể là do proxy không thể sử dụng được")
+                logger.error(lang_text.proxyEnabledRefreshing)
+                api.update_message(self.username, lang_text.proxyEnabledGettingContent)
                 api.report_proxy_error(config.proxy_id)
-                notification("Không thể lấy nội dung trang web, có thể là do proxy không thể sử dụng được")
+                notification(lang_text.proxyEnabledGettingContent)
             else:
-                api.update_message(self.username, "Không thể lấy nội dung trang web")
-                notification("Không thể lấy nội dung trang web")
+                api.update_message(self.username, lang_text.failOnGettingPage)
+                notification(lang_text.failOnGettingPage)
             return False
         while True:
             if not self.process_verify():
@@ -275,14 +295,13 @@ class ID:
             time.sleep(1)
             WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, "button-primary"))).click()
             try:
-                # Mã xác nhận sai
                 WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH,
                                                                                "/html/body/div[1]/iforgot-v2/app-container/div/iforgot-body/global-v2/div/idms-flow/div/forgot-password/div/div/div[1]/idms-step/div/div/div/div[2]/div/div[1]/div[2]/div/iforgot-captcha/div/div[2]/idms-textbox/idms-error-wrapper/div/idms-error/div/div/span")))
             except BaseException:
-                logger.info("Mã xác nhận đúng")
+                logger.info(lang_text.captchaCorrect)
                 break
             else:
-                logger.info("Mã xác nhận sai, nhập lại")
+                logger.info(lang_text.captchaFail)
                 continue
 
         try:
@@ -290,12 +309,12 @@ class ID:
                                                                                  "/html/body/div[1]/iforgot-v2/app-container/div/iforgot-body/global-v2/div/idms-flow/div/forgot-password/div/div/div[1]/idms-step/div/div/div/div[2]/div/div[1]/div[1]/div/idms-textbox/idms-error-wrapper/div/idms-error/div/div/span"))).get_attribute(
                 "innerHTML")
         except BaseException:
-            logger.info("Đăng nhập thành công")
+            logger.info(lang_text.login)
             return True
         else:
-            logger.error(f"Không thể xử lý yêu cầu, có thể là do tài khoản đã hết hạn hoặc địa chỉ IP máy chủ bị chặn\nThông tin lỗi: {msg.strip()}")
-            api.update_message(self.username, "Đăng nhập mở khóa thất bại, có thể là do tài khoản đã hết hạn hoặc địa chỉ IP máy chủ bị chặn, vui lòng xem nhật ký phía sau để biết thêm chi tiết")
-            notification(f"Đăng nhập mở khóa Apple ID thất bại, có thể là do tài khoản đã hết hạn hoặc địa chỉ IP máy chủ bị chặn")
+            logger.error(f"{lang_text.blocked}\n{msg.strip()}")
+            api.update_message(self.username, lang_text.loginFailCheckLog)
+            notification(lang_text.loginFailCheckLog)
             get_ip()
             return False
 
@@ -304,10 +323,10 @@ class ID:
             driver.find_element(By.XPATH,
                                 "/html/body/div[1]/iforgot-v2/app-container/div/iforgot-body/sa/idms-flow/div/section/div/authentication-method/div[1]/p[1]")
         except BaseException:
-            logger.info("Tài khoản hiện tại chưa bị khóa")
+            logger.info(lang_text.notLocked)
             return True  # 未被锁定
         else:
-            logger.info("Tài khoản hiện tại đã bị khóa")
+            logger.info(lang_text.locked)
             return False  # 被锁定
 
     def check_2fa(self):
@@ -315,11 +334,11 @@ class ID:
             driver.find_element(By.XPATH,
                                 "/html/body/div[1]/iforgot-v2/app-container/div/iforgot-body/hsa-two-v2/recovery-web-app/idms-flow/div/div/trusted-phone-number/div/h1")
         except BaseException:
-            logger.info("Tài khoản hiện tại chưa bật 2FA")
-            return False  # Chưa bật 2FA
+            logger.info(lang_text.twoStepnotEnabled)
+            return False  # 未开启2FA
         else:
-            logger.info("Tài khoản hiện tại đã bật 2FA")
-            return True  # Đã bật 2FA
+            logger.info(lang_text.twoStepEnabled)
+            return True  # 已开启2FA
 
     def unlock_2fa(self):
         if self.check_2fa():
@@ -327,9 +346,9 @@ class ID:
                 driver.find_element(By.XPATH,
                                     "/html/body/div[1]/iforgot-v2/app-container/div/iforgot-body/hsa-two-v2/recovery-web-app/idms-flow/div/div/trusted-phone-number/div/div/div[1]/idms-step/div/div/div/div[2]/div/div/div/button").click()
             except BaseException:
-                logger.error("Không thể tìm thấy nút tắt xác minh, có thể tài khoản không cho phép tắt 2FA")
-                api.update_message(self.username, "Không thể tắt xác minh hai bước, có thể tài khoản không cho phép tắt 2FA")
-                notification("Không thể tắt xác minh hai bước, có thể tài khoản không cho phép tắt 2FA")
+                logger.error(lang_text.cantFindDisable2FA)
+                api.update_message(self.username, lang_text.cantFindDisable2FA)
+                notification(lang_text.cantFindDisable2FA)
                 return False
             WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH,
                                                                             "/html/body/div[5]/div/div/recovery-unenroll-start/div/idms-step/div/div/div/div[3]/idms-toolbar/div/div/div/button[1]"))).click()
@@ -343,28 +362,25 @@ class ID:
                 driver.find_element(By.CLASS_NAME, "button-primary").click()
                 self.process_password()
             else:
-                logger.error(f"Hành động bị Apple từ chối, có vẻ như bị kiểm soát, thông tin lỗi: {msg.strip()}")
-                api.update_message(self.username, "Hành động bị Apple từ chối, có vẻ như bị kiểm soát")
+                logger.error(f"{lang_text.rejectedByApple}\n{msg.strip()}")
+                api.update_message(self.username, lang_text.rejectedByApple)
                 api.report_proxy_error(config.proxy_id)
-                notification("Hành động bị Apple từ chối, có vẻ như bị kiểm soát")
+                notification(lang_text.rejectedByApple)
                 get_ip()
                 return False
         return True
 
-
     def unlock(self):
         if not (self.check()):
-            # 选择选项
             try:
                 driver.find_element(By.XPATH,
                                     "/html/body/div[1]/iforgot-v2/app-container/div/iforgot-body/sa/idms-flow/div/section/div/authentication-method/div[2]/div[2]/label/span").click()
             except BaseException:
-                logger.error("Không thể chọn tùy chọn, không thể mở khóa bằng câu hỏi bảo mật")
-                api.update_message(self.username, "Không thể chọn tùy chọn, không thể mở khóa bằng câu hỏi bảo mật")
-                notification("Không thể chọn tùy chọn, không thể mở khóa bằng câu hỏi bảo mật")
+                logger.error(lang_text.chooseFail)
+                api.update_message(self.username, lang_text.chooseFail)
+                notification(lang_text.chooseFail)
                 return False
             WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "action"))).click()
-            # 填写生日
             time.sleep(1)
             if self.process_dob():
                 if self.process_security_question():
@@ -373,19 +389,18 @@ class ID:
                         driver.find_element(By.CLASS_NAME, "pwdChange").click()
                     except BaseException:
                         return True
-                    # 重置密码
                     return self.process_password()
             return False
         return True
 
     def login_appleid(self):
-        logger.info("开始登录AppleID")
+        logger.info("Bắt đầu đăng nhập AppleID  | Start logging in AppleID")
         try:
             driver.get("https://appleid.apple.com/sign-in")
         except BaseException:
-            logger.error("Trang đăng nhập không tải được")
-            api.update_message(self.username, "Trang đăng nhập không tải được")
-            notification("Trang đăng nhập không tải được")
+            logger.error(lang_text.loginLoadFail)
+            api.update_message(self.username, lang_text.loginLoadFail)
+            notification(lang_text.loginLoadFail)
             return False
         try:
             driver.switch_to.alert.accept()
@@ -406,15 +421,15 @@ class ID:
         except BaseException:
             pass
         else:
-            logger.error(f"Đăng nhập không thành công, thông báo lỗi：\n{msg.strip()}")
+            logger.error(f"{lang_text.LoginFail}\n{msg.strip()}")
             return False
         question_element = WebDriverWait(driver, 5).until(
             EC.presence_of_all_elements_located((By.XPATH, "//*[contains(@class, 'question')]")))
         answer0 = self.get_answer(question_element[1].get_attribute("innerHTML"))
         answer1 = self.get_answer(question_element[2].get_attribute("innerHTML"))
         if answer0 == "" or answer1 == "":
-            logger.error("Lỗi câu hỏi bảo mật, chương trình đã thoát")
-            api.update_message(self.username, "Vui lòng kiểm tra xem câu hỏi bảo mật đã được đặt chính xác chưa, chương trình phụ trợ đã thoát")
+            logger.error(lang_text.answerIncorrect)
+            api.update_message(self.username, lang_text.answerIncorrect)
             driver.quit()
             exit()
         answer_inputs = WebDriverWait(driver, 10).until(
@@ -430,16 +445,15 @@ class ID:
         except BaseException:
             pass
         else:
-            logger.error("Không tìm thấy câu trả lời cho câu hỏi bảo mật, vui lòng kiểm tra cấu hình")
-            api.update_message(self.username, "Không tìm thấy câu trả lời cho câu hỏi bảo mật, vui lòng kiểm tra cấu hình")
-            notification("Không tìm thấy câu trả lời cho câu hỏi bảo mật, vui lòng kiểm tra cấu hình")
+            logger.error(lang_text.answerNotMatch)
+            api.update_message(self.username, lang_text.answerNotMatch)
+            notification(lang_text.answerNotMatch)
             return False
-        # 跳过双重验证
         try:
             driver.switch_to.frame(
                 WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "iframe"))))
         except BaseException:
-            logger.error("Bỏ qua lỗi xác minh hai yếu tố")
+            logger.error(lang_text.failOnBypass2FA)
             return False
         try:
             WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH,
@@ -450,22 +464,20 @@ class ID:
             pass
         driver.switch_to.default_content()
         time.sleep(5)
-        logger.info("Đăng nhập thành công")
+        logger.info(lang_text.login)
         return True
 
     def delete_devices(self):
-        # 需要先登录，不能直接执行
-        logger.info("Bắt đầu xóa thiết bị")
-        # 删除设备
+        logger.info(lang_text.startRemoving)
         driver.get("https://appleid.apple.com/account/manage/section/devices")
         WebDriverWait(driver, 10).until_not(EC.presence_of_element_located((By.ID, "loading")))
         time.sleep(2)
         try:
             devices = driver.find_elements(By.CLASS_NAME, "button-expand")
         except BaseException:
-            logger.info("Không có thiết bị cần phải được gỡ bỏ")
+            logger.info(lang_text.noRemoveRequired)
         else:
-            logger.info(f"Tổng cộng{len(devices)}thiết bị")
+            logger.info(lang_text.totalDevices(len(devices)))
             for i in range(len(devices)):
                 devices[i].click()
                 WebDriverWait(driver, 10).until(
@@ -477,7 +489,7 @@ class ID:
                 if i != len(devices) - 1:
                     time.sleep(2)
                     devices[i + 1].click()
-            logger.info("Đã xóa thiết bị")
+            logger.info(lang_text.finishRemoving)
         return True
 
     def process_dob(self):
@@ -496,16 +508,17 @@ class ID:
             question_element = WebDriverWait(driver, 5).until(
                 EC.presence_of_all_elements_located((By.CLASS_NAME, "question")))
         except BaseException:
-            logger.error("Không tìm nạp được câu hỏi bảo mật, có thể là ngày sinh sai")
-            api.update_message(self.username, "Không tìm nạp được câu hỏi bảo mật, có thể là ngày sinh sai")
-            notification("Không tìm nạp được câu hỏi bảo mật, có thể là ngày sinh sai")
+            logger.error(lang_text.DOB_Error)
+            api.update_message(self.username, lang_text.DOB_Error)
+            notification(lang_text.DOB_Error)
+            record_error()
             return False
         answer0 = self.get_answer(question_element[0].get_attribute("innerHTML"))
         answer1 = self.get_answer(question_element[1].get_attribute("innerHTML"))
         if answer0 == "" or answer1 == "":
-            logger.error("Không tìm thấy câu trả lời cho câu hỏi bảo mật, vui lòng kiểm tra cấu hình")
-            api.update_message(self.username, "Không tìm thấy câu trả lời cho câu hỏi bảo mật, vui lòng kiểm tra cấu hình")
-            notification("Không tìm thấy câu trả lời cho câu hỏi bảo mật, vui lòng kiểm tra cấu hình")
+            logger.error(lang_text.answerNotMatch)
+            api.update_message(self.username, lang_text.answerNotMatch)
+            notification(lang_text.answerNotMatch)
             return False
         answer_inputs = driver.find_elements(By.CLASS_NAME, "generic-input-field")
         answer_inputs[0].send_keys(answer0)
@@ -519,8 +532,8 @@ class ID:
         except BaseException:
             return True
         else:
-            logger.error(f"Trả lời sai câu hỏi bảo mật\nThông báo lỗi：{msg}")
-            api.update_message(self.username, "Trả lời sai câu hỏi bảo mật，vui lòng kiểm tra cấu hình")
+            logger.error(f"{lang_text.failOnAnswer}\n{msg}")
+            api.update_message(self.username, lang_text.failOnAnswer)
             return False
 
     def process_password(self):
@@ -528,41 +541,59 @@ class ID:
             pwd_input_box = WebDriverWait(driver, 5).until(
                 EC.presence_of_all_elements_located((By.CLASS_NAME, "override")))
         except BaseException:
-            logger.error("Không lấy được hộp mật khẩu")
-            api.update_message(self.username, "Không lấy được hộp mật khẩu")
-            notification("Không lấy được hộp mật khẩu")
+            logger.error(lang_text.passwordNotFound)
+            api.update_message(self.username, lang_text.passwordNotFound)
+            notification(lang_text.passwordNotFound)
+            record_error()
             return False
-        self.password = self.generate_password()
+        new_password = self.generate_password()
         for item in pwd_input_box:
-            item.send_keys(self.password)
+            item.send_keys(new_password)
         time.sleep(1)
         pwd_input_box[-1].send_keys(Keys.ENTER)
-        logger.info(f"Mật khẩu mới: {self.password}")
         time.sleep(3)
         try:
             driver.find_element(By.XPATH,
                                 "/html/body/div[5]/div/div/div[1]/idms-step/div/div/div/div[3]/idms-toolbar/div/div/div/button[1]").click()
         except BaseException:
             pass
+        try:
+            msg = WebDriverWait(driver, 3).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "error-content"))).get_attribute("innerHTML")
+        except BaseException:
+            pass
         else:
-            WebDriverWait(driver, 6).until_not(EC.presence_of_element_located((By.XPATH,
-                                                                               "/html/body/div[5]/div/div/div[1]/idms-step/div/div/div/div[3]/idms-toolbar/div/div/div/button[1]")))
+            logger.error(f"{lang_text.rejectedByApple}: {msg.strip()}")
+            api.update_message(self.username, lang_text.rejectedByApple)
+            api.report_proxy_error(config.proxy_id)
+            notification(lang_text.rejectedByApple)
+            record_error()
+            get_ip()
+            return False
+        self.password = new_password
+        logger.info(f"{lang_text.passwordUpdated}: {new_password}")
         return True
 
     def change_password(self):
         if not self.login():
             return False
-        logger.info("Bắt đầu thay đổi mật khẩu")
-        driver.find_element(By.XPATH,
-                            "//*[@id=\"content\"]/iforgot-v2/app-container/div/iforgot-body/sa/idms-flow/div/section/div/recovery-options/div[2]/div/div[1]/label/span").click()
-        driver.find_element(By.ID, "action").click()
+        logger.info(lang_text.startChangePassword)
+        try:
+            driver.find_element(By.XPATH,
+                                "//*[@id=\"content\"]/iforgot-v2/app-container/div/iforgot-body/sa/idms-flow/div/section/div/recovery-options/div[2]/div/div[1]/label/span").click()
+            driver.find_element(By.ID, "action").click()
+        except BaseException:
+            logger.error(lang_text.failOnChangePassword)
+            api.update_message(self.username, lang_text.failOnChangePassword)
+            notification(lang_text.failOnChangePassword)
+            return False
         try:
             WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH,
                                                                            "//*[@id=\"content\"]/iforgot-v2/app-container/div/iforgot-body/sa/idms-flow/div/section/div/authentication-method/div[2]/div[2]/label/span"))).click()
             driver.find_element(By.ID, "action").click()
         except BaseException:
-            logger.error("Không thể đặt lại mật khẩu bằng câu hỏi bảo mật, sửa đổi không thành công")
-            notification("Sửa đổi mật khẩu không thành công")
+            logger.error(lang_text.failToUseSecurityQuestion)
+            notification(lang_text.failToUseSecurityQuestion)
             return False
         if self.process_dob():
             if self.process_security_question():
@@ -578,9 +609,8 @@ def notification(content):
             post(f"https://api.telegram.org/bot{config.tgbot_token}/sendMessage",
                  data={"chat_id": config.tgbot_chatid, "text": content})
         except BaseException as e:
-            logger.error(f"Telegram không gửi được tin nhắn\nThông báo lỗi：{e}")
-            logger.error("Nếu máy ở Trung Quốc đại lục, vui lòng không mở thông báo Telegram")
-
+            logger.error(f"{lang_text.TGFail}\nError: {e}")
+            logger.error(lang_text.cnTG)
 
 
 ocr = ddddocr.DdddOcr()
@@ -609,7 +639,7 @@ def setup_driver():
         else:
             driver = webdriver.Chrome(options=options)
     except BaseException as e:
-        logger.error("Cuộc gọi trình điều khiển web không thành công")
+        logger.error(lang_text.failOnCallingWD)
         logger.error(e)
         return False
     else:
@@ -617,24 +647,35 @@ def setup_driver():
         return True
 
 
+def record_error():
+    try:
+        with open("error.html", "w", encoding="utf-8") as f:
+            f.write(driver.page_source)
+        driver.save_screenshot("error.png")
+    except BaseException:
+        logger.error(lang_text.failOnSavingScreenshot)
+    else:
+        logger.error(lang_text.screenshotSaved)
+
+
 def get_ip():
     global driver
     try:
         driver.get("https://api.ip.sb/ip")
         ip_address = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "pre"))).text
-        logger.info(f"IP hiện tại: {ip_address}")
+        logger.info(f"IP: {ip_address}")
     except BaseException:
-        logger.error("Không thể lấy IP hiện tại")
+        logger.error(lang_text.getIPFail)
 
 
 def update_account(username, password):
     global api
     update_result = api.update(username, password)
     if update_result["status"] == "fail":
-        logger.error("Không thể cập nhật tài khoản")
+        logger.error(lang_text.updateFail)
         return False
     else:
-        logger.info("Đã cập nhật tài khoản thành công")
+        logger.info(lang_text.updateSuccess)
         return True
 
 
@@ -644,7 +685,7 @@ def job():
     api = API(args.api_url, args.api_key)
     config_result = api.get_config(args.taskid)
     if config_result["status"] == "fail":
-        logger.error("Không lấy được cấu hình từ API")
+        logger.error(lang_text.getAPIFail)
         exit()
     config = Config(config_result)
     id = ID(config.username, config.password, config.dob, config.answer)
@@ -652,87 +693,88 @@ def job():
     unlock = False
     unlock_success = True
     driver_result = setup_driver()
-    logger.info(f"Tài khoản hiện tại: {id.username}")
+    logger.info(f"{lang_text.CurrentAccount}{id.username}")
     if not driver_result:
-        api.update_message(id.username, "Cuộc gọi trình điều khiển web không thành công ")
-        notification("Cuộc gọi trình điều khiển web không thành công ")
-    if driver_result and id.login():
-        # 检查账号
-        if id.check_2fa():
-            logger.info("Phát hiện xác thực hai yếu tố được bật trên tài khoản và bắt đầu mở khóa")
-            unlock_success = id.unlock_2fa()
-            unlock = True
-        elif not (id.check()):
-            logger.info("Phát hiện tài khoản bị khóa, bắt đầu mở khóa")
-            unlock_success = id.unlock()
-            unlock = True
-        logger.info("Đã hoàn tất phát hiện tài khoản")
+        api.update_message(id.username, lang_text.failOnCallingWD)
+        notification(lang_text.failOnCallingWD)
+    try:
+        if driver_result and id.login():
+            if id.check_2fa():
+                logger.info(lang_text.twoStepDetected)
+                unlock_success = id.unlock_2fa()
+                unlock = True
+            elif not (id.check()):
+                logger.info(lang_text.accountLocked)
+                unlock_success = id.unlock()
+                unlock = True
+            logger.info(lang_text.checkComplete)
 
-        if unlock_success:
-            # 更新账号信息
-            if unlock:
-                update_account(id.username, id.password)
-                notification(f"Đã cập nhật Apple ID thành công\nMật khẩu mới：{id.password}")
+            if unlock_success:
+                if unlock:
+                    update_account(id.username, id.password)
+                    notification(f"{lang_text.updateSuccess}\n{lang_text.newPassword}{id.password}")
+                else:
+                    update_account(id.username, "")
+
+                if config.enable_auto_update_password:
+                    if not unlock:
+                        logger.info(lang_text.startChangePassword)
+                        reset_pw_result = id.change_password()
+                        if reset_pw_result:
+                            unlock = True
+                            update_account(id.username, id.password)
+                            notification(f"{lang_text.updateSuccess}\n{lang_text.newPassword}{id.password}")
+                        else:
+                            logger.error(lang_text.FailToChangePassword)
+                            notification(lang_text.FailToChangePassword)
+
+                if config.enable_delete_devices or config.enable_check_password_correct:
+                    need_login = False
+                    if not unlock:
+                        id.password = api.get_password(id.username)
+                    login_result = id.login_appleid()
+                    if not login_result and config.enable_check_password_correct:
+                        logger.info(lang_text.passwordChanged)
+                        reset_pw_result = id.change_password()
+                        if reset_pw_result:
+                            need_login = True
+                            update_account(id.username, id.password)
+                            notification(f"{lang_text.updateSuccess}\n{lang_text.newPassword}{id.password}")
+                        else:
+                            logger.error(lang_text.FailToChangePassword)
+                            notification(lang_text.FailToChangePassword)
+                    if config.enable_delete_devices:
+                        if need_login:
+                            login_result = id.login_appleid()
+                        if login_result:
+                            id.delete_devices()
+                        else:
+                            logger.error(lang_text.LoginFail)
             else:
-                update_account(id.username, "")
-
-            # 自动重置密码
-            if config.enable_auto_update_password:
-                if not unlock:
-                    logger.info("Bắt đầu thay đổi mật khẩu")
-                    reset_pw_result = id.change_password()
-                    if reset_pw_result:
-                        unlock = True
-                        update_account(id.username, id.password)
-                        notification(f"Đã thay đổi mật khẩu Apple ID thành công\nMật khẩu mới：{id.password}")
-                    else:
-                        logger.error("Không đổi được mật khẩu")
-                        notification("Không đổi được mật khẩu")
-
-            # 自动删除设备
-            if config.enable_delete_devices or config.enable_check_password_correct:
-                need_login = False
-                if not unlock:
-                    # 未重置密码，先获取最新密码再执行登录
-                    id.password = api.get_password(id.username)
-                login_result = id.login_appleid()
-                if not login_result and config.enable_check_password_correct:
-                    logger.info("Mật khẩu sai, bắt đầu thay đổi mật khẩu")
-                    reset_pw_result = id.change_password()
-                    if reset_pw_result:
-                        need_login = True
-                        update_account(id.username, id.password)
-                        notification(f"Đã thay đổi mật khẩu Apple ID thành công\nMật khẩu mới：{id.password}")
-                    else:
-                        logger.error("Không đổi được mật khẩu")
-                        notification("Không đổi được mật khẩu")
-                if config.enable_delete_devices:
-                    if need_login:
-                        login_result = id.login_appleid()
-                    if login_result:
-                        id.delete_devices()
-                    else:
-                        logger.error("Không đăng nhập được ID Apple, không tháo được thiết bị")
+                logger.error(lang_text.UnlockFail)
+                notification(lang_text.UnlockFail)
         else:
-            # Mở khóa không thành công
-            logger.error("Mở khóa không thành công")
-            notification("Mở khóa không thành công")
-    else:
-        logger.error("Thực thi tác vụ không thành công, đang chờ phát hiện tiếp theo")
+            logger.error(lang_text.missionFailed)
+    except BaseException as e:
+        logger.error(lang_text.unknownError)
+        logger.error(e)
+        record_error()
+        api.update_message(id.username, lang_text.unknownError)
+        notification(lang_text.unknownError)
     try:
         driver.quit()
     except BaseException:
-        logger.error("Tắt webdriver không thành công")
+        logger.error(lang_text.WDCloseError)
     schedule.every(config.check_interval).minutes.do(job)
-    logger.info(f"Nhiệm vụ tiếp theo sẽ là lúc{config.check_interval}Thực hiện trong vài phút")
+    logger.info(lang_text.nextRun(config.check_interval))
     return unlock
 
 
 logger.info(f"{'=' * 80}\n"
-            f"Khởi động autoappleid\n"
-            f"Chủ Dự dán : https://t.me/AikoCute\n"
-            f"Nhóm Telegram để trao đổi @AikoCute")
-logger.info("Phiên bản hiện tại: v1.44-20230309")
+            f"{lang_text.launch}\n"
+            f"{lang_text.repoAddress}: https://github.com/AikoCute/appleid_auto\n"
+            f"{lang_text.TG_Group}: @AikoCute")
+logger.info(f"{lang_text.version}: v1.44-20230313")
 job()
 while True:
     schedule.run_pending()
